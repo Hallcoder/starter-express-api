@@ -1,11 +1,6 @@
 const express = require('express');
 const app = express();
 const cors  = require('cors');
-require('dotenv').config();
-app.listen(3000,(_ =>{
-    console.log("Server listening port 3000");
-}));
-app.use(express.json())
 app.use(function(req,res,next){
     cors({origin:req.headers.origin})
     res.header('Access-Control-Allow-Origin', req.headers.origin);
@@ -14,18 +9,26 @@ app.use(function(req,res,next){
     res.header  ('Access-Control-Allow-Credentials', true)
     next();
 })
-app.post("/createPost", async function(req, res){
-console.log("Creating post...");
+require('dotenv').config();
 const { Configuration, OpenAIApi } = require("openai");
 console.log("KEY",process.env.OPENAI_API_KEY);
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
+app.listen(3000,(_ =>{
+    console.log("Server listening port 3000");
+}));
+app.use(express.json({limit:"50mb"}))
+app.post("/createPost", async function(req, res){
+console.log("Creating post...");
 let image_url,text_url;
 try {
+    let {title,description,file,type} = req.body;
+    console.log(req.body);
+    const prompt = `Generate an image of a ${type} with the title ${title} and the description ${description} overlaid on the image. Include the logo  ${file} in the image.`;
     const image = await openai.createImage({
-        prompt:req.body.image,
+        prompt:prompt,
         n:1,
     });
      image_url = image.data.data[0].url;
@@ -42,8 +45,19 @@ try {
     console.log(text.data.choices)
     text_url = text.data.choices[0].text;
 } catch (error) {
-    console.log(error.message)
+    console.log(error)
 }
 
 return res.status(200).json({data:{image:image_url,text:text_url},});
 });
+
+app.post("/editPost",async (req,res) => {
+    // const prompt = `Generate an image of a ${imageType} with the title "${title}" and the description "${description}" overlaid on the image. Include the logo "${logo.name}" in the image.`;
+const image = await openai.createImage({
+    prompt:`Generate a poster card containing ${req.body.file}`,
+    n:1,
+});
+console.log(image.data);
+
+return res.status(200).json({data:{image:image.data.data}})
+})
