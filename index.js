@@ -26,7 +26,7 @@ let image_url,text_url;
 try {
     let {title,description,file,type} = req.body;
     console.log(req.body);
-    const prompt = `Generate an image of a ${type} with the title ${title} and the description ${description} overlaid on the image. Include the logo  ${file} in the image.`;
+    const prompt = `Generate an image of a ${type} with the title ${title} and the description ${description} overlaid on the image. Include the logo  in the image.`;
     const image = await openai.createImage({
         prompt:prompt,
         n:1,
