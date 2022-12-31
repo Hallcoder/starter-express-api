@@ -26,7 +26,18 @@ let image_url,text_url;
 try {
     let {title,description,file,type} = req.body;
     console.log(req.body);
-    const prompt = `Generate an image of a ${type} with the title ${title} and the description ${description} overlaid on the image. Include the logo  in the image.`;
+    const response = await openai.createCompletion({
+        model: "text-davinci-001",
+        prompt: description,
+        temperature: 0.4,
+        max_tokens: 64,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+    // console.log("Text:",)
+    let text1 = response.data.choices[0].text
+    const prompt = `Generate an image with a real ${type} image on the left side with the title ${title} on top and the description ${text1} overlaid on the image in black text on the bottom side. Include the facebook's logo  in the image and give it a white background color.`;
     const image = await openai.createImage({
         prompt:prompt,
         n:1,
